@@ -18,7 +18,10 @@ RUN python -m pip install pip -U
 RUN python -m pip install psycopg[binary,pool]
 
 COPY runtime/eoapi/raster /tmp/raster
+RUN wget https://github.com/DHI/titiler-pgstac/archive/b54d484527dd5284282cc32d3bd6f1bf8258ba5a.zip -O /tmp/raster/titiler-pgstac.zip \
+  && unzip /tmp/raster/titiler-pgstac.zip -d /tmp/raster
 RUN python -m pip install /tmp/raster uvicorn
+RUN python -m pip install /tmp/raster/titiler-pgstac
 RUN rm -rf /tmp/raster
 
 ENV HOST 0.0.0.0

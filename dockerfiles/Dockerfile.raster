@@ -7,7 +7,10 @@ ENV CURL_CA_BUNDLE /etc/ssl/certs/ca-certificates.crt
 RUN pip install psycopg[binary,pool]
 
 COPY runtime/eoapi/raster /tmp/raster
+RUN wget https://github.com/DHI/titiler-pgstac/archive/b54d484527dd5284282cc32d3bd6f1bf8258ba5a.zip -O /tmp/raster/titiler-pgstac.zip \
+  && unzip /tmp/raster/titiler-pgstac.zip -d /tmp/raster
 RUN pip install /tmp/raster
+RUN pip install /tmp/raster/titiler-pgstac
 RUN rm -rf /tmp/raster
 
 ENV MODULE_NAME eoapi.raster.app
