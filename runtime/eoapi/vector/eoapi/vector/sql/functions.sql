@@ -5,19 +5,21 @@ $$ LANGUAGE SQL IMMUTABLE STRICT;
 
 -- Functions returning Collections available in PgSTAC
 CREATE OR REPLACE VIEW pg_temp.pgstac_collections_view AS
+WITH collection_items_union AS (
+        SELECT
+            i.collection,
+            ST_Union(i.geometry) AS geom
+        FROM pgstac.items i
+        GROUP BY i.collection
+    )
 SELECT
     id,
     pg_temp.jsonb2timestamptz(content->'extent'->'temporal'->'interval'->0->0) as start_datetime,
     pg_temp.jsonb2timestamptz(content->'extent'->'temporal'->'interval'->0->1) AS end_datetime,
-    ST_MakeEnvelope(
-        (content->'extent'->'spatial'->'bbox'->0->>0)::float,
-        (content->'extent'->'spatial'->'bbox'->0->>1)::float,
-        (content->'extent'->'spatial'->'bbox'->0->>2)::float,
-        (content->'extent'->'spatial'->'bbox'->0->>3)::float,
-        4326
-    ) as geom,
+    ciu.geom as geom,
     content
-FROM pgstac.collections;
+FROM pgstac.collections
+    JOIN collection_items_union ciu ON ciu.collection = pgstac.collections.id;
 
 -- Functions returning the Searches available in PgSTAC
 CREATE OR REPLACE FUNCTION pg_temp.pgstac_hash(
